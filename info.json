@@ -1,0 +1,9 @@
+{
+    "name":"spaceblock-improved",
+    "version":"0.1.0",
+    "title":"Factorio Template Mod",
+    "author":"mysecretbase",
+    "factorio_version": "1.1",
+    "dependencies": ["base >= 1.1","! spaceblock"],
+    "description": "This mod is a template"
+}
