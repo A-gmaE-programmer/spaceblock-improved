@@ -46,8 +46,9 @@ local module={
 	limitation = {},
 	limitation_message_key="",
 }
-for k,v in pairs(spaceblock.recipes)do table.insert(module.limitation,v.name) end
-for k,v in pairs(spaceblock.matter_recipes)do table.insert(module.limitation,v.name) end
+--not required \/
+--for k,v in pairs(spaceblock.recipes)do table.insert(module.limitation,v.name) end
+--for k,v in pairs(spaceblock.matter_recipes)do table.insert(module.limitation,v.name) end
 
 data.raw["assembling-machine"]["assembling-machine-1"].allowed_effects={"productivity"}
 data.raw["assembling-machine"]["assembling-machine-1"].module_specification={module_info_icon_shift = {0,0.8},module_slots = 0}

@@ -1,5 +1,5 @@
-require("item")
 require("crafting")
+require("item")
 require("landfill")
 require("proto_tiles")
 require("mining_productivity")
