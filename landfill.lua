@@ -1,6 +1,10 @@
 lib={DATA_LOGIC=true}
 require("lib/lib")
 
+local modname = "__spaceblock-improved__"
+local hand=logic.hand
+local spaceblock={}
+
 -- Find the most basic science pack
 spaceblock.initial_packs={}
 logic.InitScanResourceCats()
@@ -29,7 +33,7 @@ function spaceblock.ExtendLandfill() if(table_size(spaceblock.initial_packs)==0)
 	end
 
 	local recipe={type="recipe",name="spaceblock-landfill",icon_size=32,enabled=true, localised_name={"item-name."..orig.name},localised_description={"item-description."..orig.name},
-		icon_size=32,icons={{icon="__spaceblock__/graphics/icons/bootstrap.png",tint={r=0,g=1,b=0.25,a=1}}},
+		icon_size=32,icons={{icon=modname.."/graphics/icons/bootstrap.png",tint={r=0,g=1,b=0.25,a=1}}},
 		category="crafting",subgroup="spaceblock-dupe-bootstrap",order="a1cc",ingredients={},energy_required=settings.startup.spaceblock_landfill_speed.value or 5,	}
 
 	for k,v in pairs(spaceblock.initial_packs)do table.insert(recipe.ingredients,{type="item",name=k,amount=settings.startup.spaceblock_landfill_cost.value or 2}) end

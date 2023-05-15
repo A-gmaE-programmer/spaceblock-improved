@@ -1,9 +1,9 @@
 {
     "name":"spaceblock-improved",
     "version":"0.1.0",
-    "title":"Factorio Template Mod",
-    "author":"mysecretbase",
+    "title":"Spaceblock Improved",
+    "author":"mysecretbase, PyroFire",
     "factorio_version": "1.1",
     "dependencies": ["base >= 1.1","! spaceblock"],
-    "description": "This mod is a template"
+    "description": "Spaceblock mod with more complex ore duplication recipes, and krastorio 2 compatability. Space matter still WIP"
 }

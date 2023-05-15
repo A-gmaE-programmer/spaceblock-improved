@@ -1,6 +1,7 @@
+local modname = "__spaceblock-improved__"
 data:extend{ -- Add new crafting tab for spaceblock duplications
     {name="spaceblock-duplications",type="item-group",order="q",order_in_recipe="0",enabled=true,
-        icons{{icon=modname.."/graphics/icons/blackhole.png",icon_size=128}},
+        icons={{icon=modname.."/graphics/icons/blackhole.png",icon_size=128}},
     },
     {name="spaceblock-dupe-bootstrap",type="item-subgroup",group="spaceblock-duplications",order="7"},
 	{name="spaceblock-dupe-tree",type="item-subgroup",group="spaceblock-duplications",order="a"},
