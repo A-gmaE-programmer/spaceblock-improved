@@ -1,3 +1,4 @@
+modname = "__spaceblock-improved__"
 --[[ Invisible beacon & modules for mining productivity research - Credit Fumelgo ]]--
 
 local beacon={
