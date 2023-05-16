@@ -56,7 +56,7 @@ local water = data.raw.tile["water"]
 local waterfill = table.deepcopy(data.raw.recipe["concrete"])
 -- In game name & description of waterfill recipe
 waterfill.name = "spaceblock-water"
-waterfill.localised_name = water.localised_name or {"tile-name."..t.name}
+waterfill.localised_name = water.localised_name or {"tile-name."..water.name}
 waterfill.localised_description = water.localised_description
 -- Actual recipe
 waterfill.ingredients = {{

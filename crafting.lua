@@ -23,7 +23,7 @@ data:extend{ -- Add new crafting tab for spaceblock duplications
         group="spaceblock-duplications",
         order="b"},
 	{
-        name="spaceblock-dupe-oil",
+        name="spaceblock-dupe-fluid",
         type="item-subgroup",
         group="spaceblock-duplications",
         order="c"
