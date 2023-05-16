@@ -108,7 +108,7 @@ for k,v in pairs(data.raw.tile)do
 end
 
 
---[[ Purple Tile ]]--
+--[[ Purple Tile 
 
 local t=table.deepcopy(data.raw.tile["tutorial-grid"])
 t.name="space-concrete-purple"
@@ -119,7 +119,7 @@ t.map_color={r=0.2,g=0.1,b=0.25,a=1}
 t.minable={mining_time=2,result=t.name}
 
 data:extend{t}
-
+]]--
 --[[ Red Tile
 
 local t=table.deepcopy(data.raw.tile["tutorial-grid"])
