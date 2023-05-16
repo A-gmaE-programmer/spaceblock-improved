@@ -28,8 +28,8 @@ end
 -- check if resource is mineable and whether it generates in a normal factorio world
 -- also checks if there are results of mining
 function can_dupe(e)
-    local rz=proto.Results(e.minable)
-    if (not rz or not rz[1]) then return end --If mining gives no products skip
+    local item_drop=proto.Results(e.minable)
+    if (not item_drop or not item_drop[1]) then return end --If mining gives no products skip
     if (not proto.IsAutoplaceControl(e)) then return end --Check if resource generates
     if (not e.minable) then return end --Check if mineable
     return true
@@ -106,7 +106,51 @@ function simple_recipe(e)
     spaceblock.recipes[e.name] = dupe_recipe
 end
 
--- TODO: Wood from trees
+function spaceblock.RecipeFromTree(e,result_id)
+    -- Check if it generates
+    if(not e.minable or not proto.IsAutoplaceControl(e, result_id)) then return end
+    -- Get a list of results from mining the tree
+	local tree_drops_list = proto.Results(e.minable)
+    -- Recursively get the result(s) from tree
+    if(not result_id) then
+        for i,x in pairs(tree_drops_list) do
+            spaceblock.RecipeFromTree(e,i)
+        end 
+        return 
+    end
+    -- Get the item droped from tree
+	local item_drop=proto.Result(tree_drops_list[result_id])
+    -- Ignore fluid drops as players can't harvest them anyways
+    if(item_drop.type == "fluid") then return end
+	local rname=item_drop.name -- Get the name of the dropped item
+	if(not rname or spaceblock.recipes[rname]) then return end
+	local raw = proto.RawItem(rname)
+    if(not raw) then
+        error("A tree possibly giving a fluid? How?: " .. serpent.block(e))
+    end
+    -- start setting up the recipe
+	local dupe = {
+        name = "spaceblock-dupe-"..rname,
+        enabled = true,
+        type = "recipe",
+        icons = proto.Icons(raw),
+        enabled = true,
+		allow_decomposition = false,
+		order = (raw.order and "a3"..raw.order..result_id or "a3"..result_id),
+		localised_name = raw.localised_name or {"item-name."..rname},
+	}
+
+	dupe.category = "crafting"
+	dupe.subgroup = "spaceblock-dupe-tree"
+	dupe.energy_required = settings.startup["spaceblock_item_speed"].value
+	local input_amount = settings.startup["spaceblock_item_needed"].value
+	local duped_result = settings.startup["spaceblock_item_count"].value
+	dupe.ingredients = {{type="item",name=rname,amount=input_amount}}
+	dupe.results = {{type="item",name=rname,amount=input_amount+duped_result}}
+	spaceblock.recipes[rname] = dupe
+	spaceblock.temp[rname] = dupe
+	spaceblock.resources.tree[rname] = e
+end
 
 -- TODO: function to link 2 resources (chain recipes)
 
@@ -117,12 +161,15 @@ end
 for k,v in pairs(data.raw.resource) do
     -- Verfiy that resource can the used
     
-    -- Create simple recipe
-
-    -- Link chain recipes
-
-    -- maybe 2 ingredients to one recipe?
+    
 end
+
+-- Create simple recipe
+
+-- Link chain recipes
+
+-- TODO: maybe 2 ingredients to one recipe?
+
 
 -- TODO: scan trees
 

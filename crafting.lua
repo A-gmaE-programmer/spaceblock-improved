@@ -37,7 +37,7 @@ data:extend{ -- Add new crafting tab for spaceblock duplications
     {
         name="spaceblock-dupe-convert",
         type="item-subgroup",
-        group="spaceblock-deuplications",
+        group="spaceblock-duplications",
         order="e"
     },
 }
