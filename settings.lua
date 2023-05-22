@@ -20,7 +20,7 @@ data:extend(
 	minimum_value=5,maximum_value=50},
 
 	{type="double-setting",name="spaceblock_bootstrap_chance",order="21b",
-	setting_type="startup",default_value=1,
+	setting_type="startup",default_value=0.5,
 	minimum_value=0.001,maximum_value=1},
 
 

@@ -24,10 +24,16 @@ end
 local matter = {
     type = "item",
     name = "spaceblock-matter",
-    icons = {{
-        icon = modname.."/graphics/icons/bootstrap.png"
-    }}
+    icons = {
+        {
+            icon = modname.."/graphics/icons/bootstrap.png",
+            icon_size = 32,
+            tint = {r = 0.25, g = 0, b = 1, a = 1}
+        }
+    },
+    stack_size = 50
 }
+data:extend({matter})
 
 function spaceblock.extend()
     if(table_size(spaceblock.temp)>0) then
@@ -244,7 +250,7 @@ end
 
 -- The bootstrap recipe & space matter
 
-function spaceblock.MakeBootstrapRecipe()
+function makeBootstrapRecipe()
 
     local recipe = {
         name = "spaceblock_bootstrap",
@@ -254,7 +260,7 @@ function spaceblock.MakeBootstrapRecipe()
         order = "a1aaa",
         category = "crafting",
         subgroup = "spaceblock-dupe-bootstrap",
-        energy_required = settings.startup["spaceblock_bootstrap_speed"].value * 3,
+        energy_required = settings.startup["spaceblock_bootstrap_speed"].value,
         ingredients = {},
         results = {},
         enabled = true,
@@ -264,7 +270,7 @@ function spaceblock.MakeBootstrapRecipe()
         name = "spaceblock_matter",
         type = "recipe",
         icons={{
-            icon = "__spaceblock__/graphics/icons/bootstrap.png",
+            icon = modname.."/graphics/icons/bootstrap.png",
             tint = {r=0.25,g=0,b=1,a=1},
             icon_size = 32
         }},
@@ -286,9 +292,39 @@ function spaceblock.MakeBootstrapRecipe()
     }
     
     -- TODO: Add the resources to the recipes
+    for k,v in pairs(spaceblock.valid_resources) do 
+        local results = {}
+        local resource = proto.Result(proto.Results(v.minable)[1])
+        if (resource.type == "item") then 
+            results.type = "item"
+            results.name = resource.name
+            results.probability = settings.startup["spaceblock_bootstrap_chance"].value
+            results.amount = math.max(math.ceil(settings.startup["spaceblock_item_count"].value)*2, 1)
+            table.insert(space_matter.ingredients, {
+                type = results.type,
+                name = results.name,
+                amount = settings.startup["spaceblock_item_needed"].value * 2
+            })
+        elseif (proto.RawItem(resource.name.."-barrel")) then
+            results.type = "item"
+            results.name = resource.name.."-barrel"
+            results.probability = settings.startup["spaceblock_bootstrap_chance"].value
+            results.amount = math.ceil(settings.startup["spaceblock_item_count"].value)
+            table.insert(space_matter.ingredients, {
+                type = results.type,
+                name = results.name,
+                amount = settings.startup["spaceblock_item_needed"].value
+            })
+        end
+        table.insert(recipe.results, results)
+        
+    end
+    data:extend {recipe, space_matter}
+    return recipe
 
 end
 
+makeBootstrapRecipe()
 print_table(spaceblock.recipes)
 for k,v in pairs(spaceblock.recipes) do
     data:extend({v})
