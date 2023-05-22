@@ -1,5 +1,23 @@
+lib={DATA_LOGIC=true}
+require("lib/lib")
 local modname = "__spaceblock-improved__"
 local spaceblock={}
+
+function print_table(t, indent)
+    if type(t) ~= "table" then
+        log("Not a table")
+        return
+    end
+    indent = indent or 0
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            log(string.rep(" ", indent) .. k .. ":")
+            print_table(v, indent + 4)
+        else
+            log(string.rep(" ", indent) .. k .. ": " .. tostring(v))
+        end
+    end
+end
 
 -- Space matter item made from all basic resources
 -- Planned: use in more complex machines
@@ -10,9 +28,6 @@ local matter = {
         icon = modname.."/graphics/icons/bootstrap.png"
     }}
 }
-
-spaceblock.temp = {}
-spaceblock.recipes = {}
 
 function spaceblock.extend()
     if(table_size(spaceblock.temp)>0) then
@@ -25,19 +40,19 @@ function spaceblock.extend()
 	end
 end
 
--- check if resource is mineable and whether it generates in a normal factorio world
+-- check if resource is minable and whether it generates in a normal factorio world
 -- also checks if there are results of mining
 function can_dupe(e)
-    local item_drop=proto.Results(e.minable)
+    local item_drop = proto.Results(e.minable)
     if (not item_drop or not item_drop[1]) then return end --If mining gives no products skip
-    if (not proto.IsAutoplaceControl(e)) then return end --Check if resource generates
-    if (not e.minable) then return end --Check if mineable
+    if (not proto.IsAutoplaceControl(e) or not e.minable) then return end --Check if resource generates
+    if (not e.minable) then return end --Check if minable
     return true
 end
 
 -- Function to abstract away the ingredient and result creation from recipe for more readable code
 function setup_ingredients(dupe_recipe, type, result, temperature)
-    dupe_recipe.energy_required = settings.startup["spaceblock_"..type.."_speed"]
+    dupe_recipe.energy_required = settings.startup["spaceblock_"..type.."_speed"].value
     dupe_recipe.ingredients = {{
         type = type,
         name = result,
@@ -70,6 +85,7 @@ function simple_recipe(e)
     
     local dupe_recipe = {
         name = "spaceblock-dupe-"..e.name,
+        enabled = true,
         type = "recipe",
         icons = e.icons or {{icon = e.icon}},
         icon_size = e.icon_size,
@@ -80,19 +96,25 @@ function simple_recipe(e)
     }
 
     -- Setup the ingredients & results for recipe
+    log(category)
     if (category == "basic-fluid") then
         dupe_recipe.category = "oil-processing"
         dupe_recipe.subgroup = "spaceblock-dupe-fluid"
         dupe_recipe.order = "z"
         setup_ingredients(dupe_recipe, "fluid", result, temperature)
-    else
+    elseif (category == "basic-solid" or category == "kr-quarry") then --Edge Case for Krastoio Immersite :skull:
         dupe_recipe.category = "crafting"
         dupe_recipe.subgroup = "spaceblock-dupe-raw"
         setup_ingredients(dupe_recipe, "item", result, temperature)
+    elseif (category == "oil") then --Edge Case for Krastoio :skull:
+        dupe_recipe.category = "oil-processing"
+        dupe_recipe.subgroup = "spaceblock-dupe-fluid"
+        dupe_recipe.order = "z"
+        setup_ingredients(dupe_recipe, "fluid", result, temperature)
     end
 
     -- If an input fluid is required to mine the resource then include it in the recipe
-    if (e.mineable.required_fluid) then
+    if (e.minable.required_fluid) then
         dupe_recipe.category = "chemistry"
 		dupe_recipe.subgroup = "spaceblock-dupe-chem"
 		table.insert(dupe_recipe.ingredients, {
@@ -106,7 +128,7 @@ function simple_recipe(e)
     spaceblock.recipes[e.name] = dupe_recipe
 end
 
-function spaceblock.RecipeFromTree(e,result_id)
+function recipeFromTree(e,result_id)
     -- Check if it generates
     if(not e.minable or not proto.IsAutoplaceControl(e, result_id)) then return end
     -- Get a list of results from mining the tree
@@ -114,7 +136,7 @@ function spaceblock.RecipeFromTree(e,result_id)
     -- Recursively get the result(s) from tree
     if(not result_id) then
         for i,x in pairs(tree_drops_list) do
-            spaceblock.RecipeFromTree(e,i)
+            recipeFromTree(e,i)
         end 
         return 
     end
@@ -148,30 +170,70 @@ function spaceblock.RecipeFromTree(e,result_id)
 	dupe.ingredients = {{type="item",name=rname,amount=input_amount}}
 	dupe.results = {{type="item",name=rname,amount=input_amount+duped_result}}
 	spaceblock.recipes[rname] = dupe
-	spaceblock.temp[rname] = dupe
-	spaceblock.resources.tree[rname] = e
+	--spaceblock.temp[rname] = dupe
+	--spaceblock.resources.tree[rname] = e
 end
 
--- TODO: function to link 2 resources (chain recipes)
+function chain_recipe(ingredient, result)
+    print_table(ingredient)
+    print_table(result)
+    
+    local input_amount = settings.startup["spaceblock_convert_item_needed"].value
+    local extra_amount = settings.startup["spaceblock_convert_item_count"].value
+
+    local dupe_recipe = {
+        name = "spaceblock-dupe-convert-"..result.name,
+        enabled = true,
+        type = "recipe",
+        icons = result.icons or {{icon=result.icon}},
+        icon_size = result.icon_size,
+        enabled = true,
+		allow_decomposition = false,
+		order = (result.order and "b"..result.order or "b"),
+		localised_name = result.localised_name or {"entity-name."..result.name},
+        
+        category = "crafting",
+        subgroup = "spaceblock-dupe-raw",
+        energy_required = settings.startup["spaceblock_convert_item_speed"].value,
+        ingredients = {{
+            type = "item",
+            name = proto.Result(proto.Results(ingredient.minable)[1]).name,
+            amount = input_amount,
+        }},
+        results = {{
+            type = "item",
+            name = proto.Result(proto.Results(result.minable)[1]).name,
+            amount = input_amount,
+        }},
+    }
+
+    spaceblock.recipes["convert-"..result.name] = dupe_recipe
+
+end
+
+spaceblock.temp = {}
+spaceblock.recipes = {}
+spaceblock.valid_resources = {}
 
 -- TODO: maybe 2 ingredients to one recipe?
-
-
 -- Scan the resources
+-- make a list of the resources that can be duped
+local resource_items = {} --Temporary table so that I can more easily create the chain recipe
 for k,v in pairs(data.raw.resource) do
-    -- Verfiy that resource can the used
-    
-    
+    if (can_dupe(v)) then
+        spaceblock.valid_resources[v.name] = v
+        if (v.category == "basic-solid" or v.category == "kr-quarry") then table.insert(resource_items, v) end
+    end
 end
-
 -- Create simple recipe
-
+for k,v in pairs(spaceblock.valid_resources) do simple_recipe(v) end
+-- scan trees
+for k,v in pairs(data.raw.tree)do recipeFromTree(v) end
 -- Link chain recipes
+for recipeIndex = 1,(#resource_items - 1) do chain_recipe(resource_items[recipeIndex], resource_items[recipeIndex+1]) end
+chain_recipe(resource_items[#resource_items], resource_items[1])
 
 -- TODO: maybe 2 ingredients to one recipe?
-
-
--- TODO: scan trees
 
 
 
@@ -222,4 +284,9 @@ function spaceblock.MakeBootstrapRecipe()
     
     -- TODO: Add the resources to the recipes
 
+end
+
+print_table(spaceblock.recipes)
+for k,v in pairs(spaceblock.recipes) do
+    data:extend({v})
 end

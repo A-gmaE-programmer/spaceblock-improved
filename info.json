@@ -4,6 +4,6 @@
     "title":"Spaceblock Improved",
     "author":"mysecretbase, PyroFire",
     "factorio_version": "1.1",
-    "dependencies": ["base >= 1.1","! spaceblock"],
-    "description": "Spaceblock mod with more complex ore duplication recipes, and krastorio 2 compatability. Space matter still WIP"
+    "dependencies": ["base >= 1.1","! spaceblock","? exotic-industries","? krastorio2"],
+    "description": "Spaceblock mod with more complex ore duplication recipes, and the aim to improve mod compatability. Space matter still WIP"
 }
