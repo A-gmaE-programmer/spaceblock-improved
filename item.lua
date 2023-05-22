@@ -96,7 +96,7 @@ function simple_recipe(e)
     }
 
     -- Setup the ingredients & results for recipe
-    log(category)
+    --log(category)
     if (category == "basic-fluid") then
         dupe_recipe.category = "oil-processing"
         dupe_recipe.subgroup = "spaceblock-dupe-fluid"
@@ -175,8 +175,6 @@ function recipeFromTree(e,result_id)
 end
 
 function chain_recipe(ingredient, result)
-    print_table(ingredient)
-    print_table(result)
     
     local input_amount = settings.startup["spaceblock_convert_item_needed"].value
     local extra_amount = settings.startup["spaceblock_convert_item_count"].value
@@ -203,7 +201,7 @@ function chain_recipe(ingredient, result)
         results = {{
             type = "item",
             name = proto.Result(proto.Results(result.minable)[1]).name,
-            amount = input_amount,
+            amount = input_amount + extra_amount,
         }},
     }
 
@@ -222,7 +220,8 @@ local resource_items = {} --Temporary table so that I can more easily create the
 for k,v in pairs(data.raw.resource) do
     if (can_dupe(v)) then
         spaceblock.valid_resources[v.name] = v
-        if (v.category == "basic-solid" or v.category == "kr-quarry") then table.insert(resource_items, v) end
+        local category = v.category or "basic-solid"
+        if (category == "basic-solid" or category == "kr-quarry") then table.insert(resource_items, v) end
     end
 end
 -- Create simple recipe
@@ -232,6 +231,10 @@ for k,v in pairs(data.raw.tree)do recipeFromTree(v) end
 -- Link chain recipes
 for recipeIndex = 1,(#resource_items - 1) do chain_recipe(resource_items[recipeIndex], resource_items[recipeIndex+1]) end
 chain_recipe(resource_items[#resource_items], resource_items[1])
+for k,v in pairs(resource_items) do
+    log(v.name)
+end
+--print_table(resource_items)
 
 -- TODO: maybe 2 ingredients to one recipe?
 
